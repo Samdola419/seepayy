@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification – SeePay</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#0B2E21; --bg:#F8FAF9; --card:#fff; --line:#E5E7EB; --mut:#6B7280; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); font-family:Inter,system-ui,sans-serif; }
+.wrap { max-width:700px; margin:3rem auto; padding:0 1.5rem; }
+.card { background:var(--card); border-radius:16px; border:1px solid var(--line); padding:1.75rem; }
+h1 { color:var(--ink); margin-bottom:.5rem; }
+.status { display:flex; align-items:center; gap:.75rem; margin:1.25rem 0; }
+.badge { padding:.3rem .7rem; border-radius:99px; font-size:.8rem; font-weight:600; }
+.badge.wait { background:#FEF3C7; color:#92400E; }
+p { color:var(--mut); line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Account verification</h1>
+    <div class="status">
+      <span class="badge wait">Pending review</span>
+    </div>
+    <p>Your shop is registered. Once you pay the GH₵ 150 setup fee, your storefront will go live at <strong id="shop">yourshop.seepay.shop</strong>.</p>
+    <p style="margin-top:1rem">Agents earn GH₵ 50 when the shop they referred completes verification.</p>
+  </div>
+</div>
+<script>
+var s = JSON.parse(localStorage.getItem('seepay_session') || '{}');
+if (s.id) document.getElementById('shop').textContent = s.id + '.seepay.shop';
+</script>
+</body>
+</html>

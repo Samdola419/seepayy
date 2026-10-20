@@ -1,23 +1,65 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Become an agent – SeePay</title></head><body>
-<main><div class="narrow stack">
-  <h1>Become a SeePay agent</h1>
-  <p class="mut">Share your referral link. When a shop you brought in pays its GH₵ 150 setup fee, GH₵ 50 is added to your balance.</p>
-  <form class="card stack" id="f" novalidate>
-    <div><label for="name">Full name</label><input id="name" placeholder="Kwame Mensah"></div>
-    <div class="f2"><div><label for="net">MoMo network</label><select id="net"></select></div>
-      <div><label for="momo">MoMo number (you get paid here)</label><input id="momo" inputmode="tel" placeholder="024 123 4567"></div></div>
-    <div class="err" id="err" hidden></div>
-    <button class="btn g">Get my referral code</button>
-    <p class="sm mut">Already an agent? <a href="login.html">Sign in</a></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Become an Agent – SeePay</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#0B2E21; --gold:#FFC83D; --bg:#F8FAF9; --card:#fff; --line:#E5E7EB; --mut:#6B7280; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); font-family:Inter,system-ui,sans-serif; color:#111; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+.card { background:var(--card); width:100%; max-width:420px; border-radius:20px; box-shadow:0 10px 40px rgba(11,46,33,.08); padding:2rem; border:1px solid var(--line); }
+h1 { font-size:1.75rem; font-weight:700; color:var(--ink); margin-bottom:.25rem; }
+.sub { color:var(--mut); margin-bottom:1.75rem; font-size:.95rem; }
+.field { margin-bottom:1rem; }
+label { display:block; font-size:.85rem; font-weight:600; margin-bottom:.35rem; color:#374151; }
+input, select { width:100%; padding:.75rem 1rem; border:1.5px solid var(--line); border-radius:12px; font-size:1rem; background:#fff; }
+input:focus, select:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,200,61,.3); }
+.btn { width:100%; background:var(--ink); color:#fff; border:none; padding:.9rem; border-radius:12px; font-weight:600; font-size:1rem; cursor:pointer; margin-top:.5rem; }
+.btn:hover { background:#14543f; }
+.err { background:#FEF2F2; color:#B91C1C; padding:.75rem 1rem; border-radius:10px; font-size:.9rem; margin-bottom:1rem; display:none; }
+.link { text-align:center; margin-top:1.25rem; font-size:.9rem; color:var(--mut); }
+.link a { color:var(--ink); font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Become an Agent</h1>
+  <p class="sub">Earn GH₵ 50 for every shop you refer that pays the setup fee.</p>
+  <div class="err" id="err"></div>
+  <form id="f">
+    <div class="field"><label>Full name</label><input id="name" required placeholder="Kwame Mensah"></div>
+    <div class="field"><label>Phone number</label><input id="phone" required placeholder="0241234567"></div>
+    <div class="field"><label>Password</label><input id="pass" type="password" required placeholder="Create a password"></div>
+    <div class="field"><label>Confirm password</label><input id="pass2" type="password" required placeholder="Confirm password"></div>
+    <div class="field"><label>MoMo network</label>
+      <select id="net"><option>MTN</option><option>Vodafone</option><option>AirtelTigo</option></select>
+    </div>
+    <button class="btn" type="submit">Create agent account</button>
   </form>
-</div></main>
-<script src="seepay.js"></script>
+  <p class="link">Already an agent? <a href="/login.html">Sign in</a></p>
+</div>
 <script>
-SP.nav();
-var $=function(i){return document.getElementById(i)};
-SP.NETS.forEach(function(n){$('net').add(new Option(n))});
-$('f').onsubmit=function(e){e.preventDefault();
-  var r=SP.createAgent({name:$('name').value,network:$('net').value,momo:$('momo').value});
-  if(r.error){$('err').textContent=r.error;$('err').hidden=false;return}
-  SP.login('agent',r.agent.code);location.href='agent-dashboard.html'};
-</script></body></html>
+document.getElementById('f').onsubmit = async function(e) {
+  e.preventDefault();
+  var err = document.getElementById('err');
+  err.style.display = 'none';
+  var name = document.getElementById('name').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var pass = document.getElementById('pass').value;
+  var pass2 = document.getElementById('pass2').value;
+  var net = document.getElementById('net').value;
+  if (pass !== pass2) { err.textContent = 'Passwords do not match'; err.style.display = 'block'; return; }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters'; err.style.display = 'block'; return; }
+  var agents = JSON.parse(localStorage.getItem('seepay_agents') || '[]');
+  if (agents.find(a => a.phone === phone)) { err.textContent = 'Phone number already registered'; err.style.display = 'block'; return; }
+  var code = name.replace(/[^a-z]/gi,'').slice(0,5).toUpperCase() + Math.floor(100+Math.random()*900);
+  agents.push({ name, phone, password: pass, network: net, code, created: Date.now() });
+  localStorage.setItem('seepay_agents', JSON.stringify(agents));
+  localStorage.setItem('seepay_session', JSON.stringify({ role:'agent', id:code, name }));
+  location.href = '/agent-dashboard.html';
+};
+</script>
+</body>
+</html>

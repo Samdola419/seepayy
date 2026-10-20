@@ -1,89 +1,106 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Shop dashboard – SeePay</title></head><body>
-<main><div class="wrap" id="app"></div></main>
-<script src="seepay.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop Dashboard – SeePay</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#0B2E21; --gold:#FFC83D; --bg:#F8FAF9; --card:#fff; --line:#E5E7EB; --mut:#6B7280; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); font-family:Inter,system-ui,sans-serif; color:#111; }
+header { background:var(--ink); color:#fff; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; }
+header a { color:#fff; text-decoration:none; font-weight:600; }
+.wrap { max-width:960px; margin:1.5rem auto; padding:0 1.5rem; }
+.tabs { display:flex; gap:.5rem; margin-bottom:1.5rem; border-bottom:1px solid var(--line); }
+.tabs button { background:none; border:none; padding:.6rem 1rem; font-weight:600; color:var(--mut); cursor:pointer; border-bottom:3px solid transparent; }
+.tabs button.on { color:var(--ink); border-color:var(--gold); }
+.card { background:var(--card); border-radius:16px; border:1px solid var(--line); padding:1.5rem; margin-bottom:1rem; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+@media(max-width:640px){ .grid{ grid-template-columns:1fr; } }
+input, select, textarea { width:100%; padding:.7rem .9rem; border:1.5px solid var(--line); border-radius:10px; font-size:.95rem; }
+.btn { background:var(--ink); color:#fff; border:none; padding:.65rem 1.1rem; border-radius:10px; font-weight:600; cursor:pointer; }
+.btn.g { background:var(--gold); color:var(--ink); }
+.list div { display:flex; justify-content:space-between; align-items:center; padding:.8rem 0; border-bottom:1px solid var(--line); }
+.badge { padding:.2rem .55rem; border-radius:99px; font-size:.75rem; font-weight:600; }
+.badge.wait { background:#FEF3C7; color:#92400E; }
+</style>
+</head>
+<body>
+<header>
+  <strong id="shopName">My Shop</strong>
+  <a href="/login.html" onclick="localStorage.removeItem('seepay_session')">Sign out</a>
+</header>
+<div class="wrap">
+  <div class="tabs">
+    <button class="on" data-tab="products">Products</button>
+    <button data-tab="orders">Orders</button>
+    <button data-tab="settings">Settings</button>
+  </div>
+  <div id="content"></div>
+</div>
 <script>
-SP.nav();
-var s=SP.require('shop'),E=SP.esc,sh,tab=(location.hash||'#overview').slice(1),editing=null,app=document.getElementById('app');
-function save(){SP.putShop(sh)}
-function opts(list,v){return list.map(function(x){return '<option'+(x===v?' selected':'')+'>'+E(x)+'</option>'}).join('')}
-function storeUrl(){return SP.base()+'store.html?shop='+sh.slug}
-var T=[['overview','Overview'],['products','Products'],['orders','Orders'],['public','Public view'],['settings','Settings']];
-
-function overview(){
-  var st=SP.stats(sh);
-  return '<div class="stats">'+
-    '<div class="card stat"><b>'+st.n+'</b><span>Orders</span></div>'+
-    '<div class="card stat"><b>'+SP.money(st.gross)+'</b><span>Sales</span></div>'+
-    '<div class="card stat"><b>'+SP.money(st.fees)+'</b><span>Fees (Paystack + SeePay)</span></div>'+
-    '<div class="card stat"><b>'+SP.money(st.net)+'</b><span>You receive</span></div></div>'+
-  '<div class="card stack" style="margin-top:1rem"><h2>Your shop link</h2><div class="copy"><input readonly value="'+E(storeUrl())+'"><button class="btn" data-a="copy">Copy</button></div>'+
-    '<p class="sm mut">Live address will be '+E(sh.slug)+'.seepay.shop once connected to the domain. Each order has Paystack’s 1.95% and SeePay’s GH₵ 0.20 taken off.</p></div>'+
-  '<div class="card" style="margin-top:1rem"><h2>Latest orders</h2><div class="list">'+(sh.orders.slice(0,4).map(orderRow).join('')||'<div><span class="mut">No orders yet.</span></div>')+'</div></div>';
+var session = JSON.parse(localStorage.getItem('seepay_session') || 'null');
+if (!session || session.role !== 'shop') location.href = '/login.html';
+document.getElementById('shopName').textContent = session.id + '.seepay.shop';
+var products = JSON.parse(localStorage.getItem('products_' + session.id) || '[]');
+function renderProducts() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <h2 style="margin-bottom:1rem">Add product</h2>
+      <div class="grid">
+        <div><label style="font-size:.85rem;font-weight:600">Name</label><input id="pn" placeholder="Jollof + chicken"></div>
+        <div><label style="font-size:.85rem;font-weight:600">Price (GH₵)</label><input id="pp" type="number" step="0.01" placeholder="35"></div>
+      </div>
+      <div style="margin-top:.75rem"><label style="font-size:.85rem;font-weight:600">Description</label><textarea id="pd" rows="2" placeholder="With shito and salad"></textarea></div>
+      <button class="btn g" style="margin-top:1rem" onclick="addProduct()">Add product</button>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:.5rem">Your products (${products.length})</h2>
+      <div class="list" id="plist">${products.map(p => `
+        <div>
+          <div><b>${p.name}</b><div style="color:#6B7280;font-size:.85rem">${p.desc || ''}</div></div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <b>GH₵ ${p.price}</b>
+            <button class="btn" style="padding:.3rem .6rem;font-size:.8rem" onclick="delProduct('${p.id}')">Delete</button>
+          </div>
+        </div>`).join('') || '<div style="color:#6B7280">No products yet.</div>'}</div>
+    </div>`;
 }
-function orderRow(o){
-  var b={paid:'<span class="badge">New</span>',completed:'<span class="badge n">Completed</span>',cancelled:'<span class="badge x">Cancelled</span>'}[o.status];
-  return '<div><div class="grow"><b>'+E(o.customer)+'</b> <span class="sm mut">'+E(o.id)+' · '+new Date(o.at).toLocaleString()+'</span><div class="sm">'+o.items.map(function(i){return i.qty+' × '+E(i.name)}).join(', ')+'</div></div>'+
-    '<div style="text-align:right"><b>'+SP.money(o.total)+'</b><div class="sm mut">you get '+SP.money(o.net)+'</div></div>'+b+'</div>';
+function addProduct() {
+  var name = document.getElementById('pn').value.trim();
+  var price = parseFloat(document.getElementById('pp').value);
+  var desc = document.getElementById('pd').value.trim();
+  if (!name || !price) return alert('Enter name and price');
+  products.push({ id: Date.now().toString(), name, price, desc });
+  localStorage.setItem('products_' + session.id, JSON.stringify(products));
+  renderProducts();
 }
-function products(){
-  var p=editing?sh.products.filter(function(x){return x.id===editing})[0]:null;
-  return '<form class="card stack" id="pf"><h2>'+(p?'Edit item':'Add an item')+'</h2>'+
-    '<div class="f2"><div><label>Name</label><input id="pn" required value="'+E(p?p.name:'')+'"></div><div><label>Price (GH₵)</label><input id="pp" type="number" min="0.5" step="0.01" required value="'+(p?p.price:'')+'"></div></div>'+
-    '<div><label>Description</label><input id="pd" value="'+E(p?p.desc:'')+'"></div>'+
-    '<div class="head"><button class="btn g">'+(p?'Save changes':'Add item')+'</button>'+(p?'<button class="btn o" type="button" data-a="cancel">Cancel</button>':'')+'</div></form>'+
-  '<div class="card" style="margin-top:1rem"><h2>Your items ('+sh.products.length+')</h2><div class="list">'+(sh.products.map(function(x){
-    return '<div><div class="grow"><b>'+E(x.name)+'</b><div class="sm mut">'+E(x.desc)+'</div></div><b>'+SP.money(x.price)+'</b>'+
-      '<button class="btn o sm" data-a="avail" data-id="'+x.id+'">'+(x.available?'Available':'Sold out')+'</button>'+
-      '<button class="btn o sm" data-a="edit" data-id="'+x.id+'">Edit</button><button class="btn r sm" data-a="del" data-id="'+x.id+'">Delete</button></div>'}).join('')||'<div><span class="mut">Add your first item above.</span></div>')+'</div></div>';
+function delProduct(id) {
+  products = products.filter(p => p.id !== id);
+  localStorage.setItem('products_' + session.id, JSON.stringify(products));
+  renderProducts();
 }
-function orders(){
-  return '<div class="card"><h2>Orders</h2><div class="list">'+(sh.orders.map(function(o){
-    return orderRow(o).replace(/<\/div>$/,(o.status==='paid'?'<button class="btn sm" data-a="done" data-id="'+o.id+'">Mark completed</button><button class="btn r sm" data-a="cancel-o" data-id="'+o.id+'">Cancel</button>':'')+'</div>')}).join('')||'<div><span class="mut">Orders from your store show up here once customers pay.</span></div>')+'</div></div>';
+function renderOrders() {
+  document.getElementById('content').innerHTML = `<div class="card"><h2>Orders</h2><p style="color:#6B7280;margin-top:.5rem">Orders will appear here once customers start paying.</p></div>`;
 }
-function pub(){
-  return '<div class="card stack"><div class="head"><div><h2>What customers see</h2><p class="sm mut">Your public storefront, exactly as shoppers get it.</p></div><a class="btn o sm" target="_blank" href="store.html?shop='+E(sh.slug)+'">Open in new tab</a></div>'+
-    (sh.live?'':'<div class="note">Your shop is not live yet, so customers see a “coming soon” page.</div>')+
-    '<div class="pv"><iframe title="Storefront preview" src="store.html?shop='+E(sh.slug)+'&embed=1"></iframe></div></div>';
+function renderSettings() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <h2>Shop settings</h2>
+      <p style="color:#6B7280;margin:.75rem 0">Verification status: <span class="badge wait">Pending</span></p>
+      <p style="font-size:.9rem">Pay the GH₵ 150 setup fee to go live. (Demo)</p>
+      <button class="btn" style="margin-top:1rem" onclick="alert('Setup fee payment will connect to Paystack soon')">Pay setup fee</button>
+    </div>`;
 }
-function settings(){
-  return '<form class="card stack" id="sf"><h2>Shop details</h2>'+
-    '<div><label>Business name</label><input id="sn" value="'+E(sh.name)+'"></div>'+
-    '<div><label>Shop address</label><input value="'+E(sh.slug)+'.seepay.shop" disabled></div>'+
-    '<div><label>Category</label><select id="sc">'+opts(SP.CATS,sh.category)+'</select></div>'+
-    '<div><label>Description</label><textarea id="sd" maxlength="200">'+E(sh.desc)+'</textarea></div>'+
-    '<div class="f2"><div><label>MoMo network</label><select id="sx">'+opts(SP.NETS,sh.network)+'</select></div><div><label>MoMo number</label><input id="sm" value="'+E(sh.momo)+'"></div></div>'+
-    '<div><label>WhatsApp number</label><input id="sw" value="'+E(sh.whatsapp)+'"></div>'+
-    '<label style="display:flex;gap:.6rem;align-items:center"><input type="checkbox" id="so" style="width:auto"'+(sh.open?' checked':'')+'> Shop is open for orders</label>'+
-    '<div class="err" id="err" hidden></div><button class="btn g">Save settings</button></form>';
-}
-function render(){
-  sh=SP.shop(s.id);
-  var banner=sh.setupPaid?'':'<div class="note stack"><b>One step left: pay your GH₵ '+SP.SETUP+' setup fee to go live.</b><div><button class="btn g" data-a="pay">Pay GH₵ '+SP.SETUP+' with MoMo (demo)</button></div><p class="sm">Demo only. This will use a Paystack charge when connected.</p></div>';
-  app.innerHTML='<div class="head" style="margin-top:.4rem"><div><h1>'+E(sh.name)+'</h1><p class="mut">'+E(sh.slug)+'.seepay.shop · '+E(sh.category)+'</p></div><span class="badge '+(sh.live?'':'o')+'">'+(sh.live?(sh.open?'Live · Open':'Live · Closed'):'Not live yet')+'</span></div>'+
-    banner+'<div class="tabs">'+T.map(function(t){return '<button data-a="tab" data-id="'+t[0]+'" class="'+(t[0]===tab?'on':'')+'">'+t[1]+'</button>'}).join('')+'</div>'+
-    ({overview:overview,products:products,orders:orders,public:pub,settings:settings}[tab]||overview)();
-  var pf=document.getElementById('pf');if(pf)pf.onsubmit=function(e){e.preventDefault();
-    var n=document.getElementById('pn').value.trim(),pr=parseFloat(document.getElementById('pp').value),d=document.getElementById('pd').value.trim();
-    if(!n||!(pr>0))return SP.toast('Enter a name and a price');
-    if(editing){var x=sh.products.filter(function(q){return q.id===editing})[0];x.name=n;x.price=pr;x.desc=d;editing=null}
-    else sh.products.push({id:SP.uid(),name:n,desc:d,price:pr,available:true});
-    save();render()};
-  var sf=document.getElementById('sf');if(sf)sf.onsubmit=function(e){e.preventDefault();
-    var m=SP.phone(document.getElementById('sm').value),w=document.getElementById('sw').value,wa=w?SP.phone(w):'',er=document.getElementById('err');
-    if(!m||(w&&!wa)){er.textContent='Check your MoMo and WhatsApp numbers.';er.hidden=false;return}
-    sh.name=document.getElementById('sn').value.trim()||sh.name;sh.category=document.getElementById('sc').value;sh.desc=document.getElementById('sd').value.trim();
-    sh.network=document.getElementById('sx').value;sh.momo=m;sh.whatsapp=wa;sh.open=document.getElementById('so').checked;save();SP.toast('Saved');render()};
-}
-app.onclick=function(e){
-  var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a,id=b.dataset.id,x;
-  if(a==='tab'){tab=id;editing=null;history.replaceState(null,'','#'+id)}
-  else if(a==='copy'){return SP.copy(storeUrl())}
-  else if(a==='pay'){sh.setupPaid=true;sh.live=true;save();SP.toast('Setup paid. Your shop is live.')}
-  else if(a==='edit'){editing=id}else if(a==='cancel'){editing=null}
-  else if(a==='avail'){x=sh.products.filter(function(q){return q.id===id})[0];x.available=!x.available;save()}
-  else if(a==='del'){if(!confirm('Delete this item?'))return;sh.products=sh.products.filter(function(q){return q.id!==id});save()}
-  else if(a==='done'||a==='cancel-o'){x=sh.orders.filter(function(q){return q.id===id})[0];x.status=a==='done'?'completed':'cancelled';save()}
-  render();
-};
-if(s)render();
-</script></body></html>
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = function() {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+  this.classList.add('on');
+  if (this.dataset.tab === 'products') renderProducts();
+  if (this.dataset.tab === 'orders') renderOrders();
+  if (this.dataset.tab === 'settings') renderSettings();
+});
+renderProducts();
+</script>
+</body>
+</html>
