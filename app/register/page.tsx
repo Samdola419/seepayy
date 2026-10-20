@@ -40,7 +40,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/');
+      router.push('/shop-dashboard.html');
     } catch (err) {
       setError('Network error. Try again.');
       setLoading(false);
@@ -48,81 +48,46 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F7F3] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-[#d5e2da]">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-[#0B2E21]">Register your shop</h1>
-          <p className="text-[#4b5f55] mt-2">Get your shop online by lunchtime</p>
+    <div style={{ minHeight: '100vh', background: '#F2F7F3', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', fontFamily: 'system-ui, sans-serif' }}>
+      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 10px 40px rgba(11,46,33,0.1)', padding: '2rem', width: '100%', maxWidth: '420px', border: '1px solid #d5e2da' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0B2E21', margin: 0 }}>Register your shop</h1>
+          <p style={{ color: '#4b5f55', marginTop: '0.5rem' }}>Get your shop online by lunchtime</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm border border-red-200">
+          <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.875rem', border: '1px solid #fecaca' }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">Business name</label>
-            <input
-              name="businessName"
-              value={form.businessName}
-              onChange={handleChange}
-              required
-              className="w-full border border-[#d5e2da] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-              placeholder="Mama Jollof"
-            />
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>Business name</label>
+            <input name="businessName" value={form.businessName} onChange={handleChange} required style={{ width: '100%', border: '1px solid #d5e2da', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '1rem' }} placeholder="Mama Jollof" />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">Shop link</label>
-            <div className="flex">
-              <input
-                name="subdomain"
-                value={form.subdomain}
-                onChange={handleChange}
-                required
-                className="flex-1 border border-[#d5e2da] rounded-l-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-                placeholder="mamajollof"
-              />
-              <span className="bg-[#F2F7F3] border border-l-0 border-[#d5e2da] rounded-r-xl px-4 py-3 text-sm text-[#4b5f55] flex items-center">
-                .seepay.shop
-              </span>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>Shop link</label>
+            <div style={{ display: 'flex' }}>
+              <input name="subdomain" value={form.subdomain} onChange={handleChange} required style={{ flex: 1, border: '1px solid #d5e2da', borderRadius: '12px 0 0 12px', padding: '0.75rem 1rem', fontSize: '1rem' }} placeholder="mamajollof" />
+              <span style={{ background: '#F2F7F3', border: '1px solid #d5e2da', borderLeft: 'none', borderRadius: '0 12px 12px 0', padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#4b5f55', display: 'flex', alignItems: 'center' }}>.seepay.shop</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">WhatsApp number</label>
-            <input
-              name="whatsappNumber"
-              value={form.whatsappNumber}
-              onChange={handleChange}
-              required
-              className="w-full border border-[#d5e2da] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-              placeholder="0241234567"
-            />
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>WhatsApp number</label>
+            <input name="whatsappNumber" value={form.whatsappNumber} onChange={handleChange} required style={{ width: '100%', border: '1px solid #d5e2da', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '1rem' }} placeholder="0241234567" />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">MoMo number</label>
-            <input
-              name="ownerMomoNumber"
-              value={form.ownerMomoNumber}
-              onChange={handleChange}
-              required
-              className="w-full border border-[#d5e2da] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-              placeholder="0241234567"
-            />
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>MoMo number</label>
+            <input name="ownerMomoNumber" value={form.ownerMomoNumber} onChange={handleChange} required style={{ width: '100%', border: '1px solid #d5e2da', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '1rem' }} placeholder="0241234567" />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">MoMo network</label>
-            <select
-              name="ownerMomoNetwork"
-              value={form.ownerMomoNetwork}
-              onChange={handleChange}
-              className="w-full border border-[#d5e2da] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-            >
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>MoMo network</label>
+            <select name="ownerMomoNetwork" value={form.ownerMomoNetwork} onChange={handleChange} style={{ width: '100%', border: '1px solid #d5e2da', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '1rem' }}>
               <option>MTN</option>
               <option>VODAFONE</option>
               <option>AIRTELTIGO</option>
@@ -130,27 +95,17 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#0B2E21] mb-1">Referral code (optional)</label>
-            <input
-              name="referralCode"
-              value={form.referralCode}
-              onChange={handleChange}
-              className="w-full border border-[#d5e2da] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFC83D]"
-              placeholder="AGENT01"
-            />
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#0B2E21', marginBottom: '0.25rem' }}>Referral code (optional)</label>
+            <input name="referralCode" value={form.referralCode} onChange={handleChange} style={{ width: '100%', border: '1px solid #d5e2da', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '1rem' }} placeholder="AGENT01" />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#0B2E21] text-white py-3.5 rounded-xl font-semibold text-lg hover:bg-[#14543f] disabled:opacity-60 transition"
-          >
+          <button type="submit" disabled={loading} style={{ width: '100%', background: '#0B2E21', color: 'white', padding: '0.875rem', borderRadius: '12px', fontWeight: 600, fontSize: '1.05rem', border: 'none', cursor: 'pointer' }}>
             {loading ? 'Creating your shop...' : 'Create my shop'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-[#4b5f55] mt-6">
-          Already have a shop? <a href="/" className="text-[#0B2E21] font-semibold underline">Go home</a>
+        <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#4b5f55', marginTop: '1.5rem' }}>
+          <a href="/landing.html" style={{ color: '#0B2E21', fontWeight: 600, textDecoration: 'underline' }}>Back to home</a>
         </p>
       </div>
     </div>
