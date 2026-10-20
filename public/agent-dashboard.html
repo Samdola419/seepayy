@@ -1,29 +1,63 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Agent dashboard – SeePay</title></head><body>
-<main><div class="wrap stack" id="app"></div></main>
-<script src="seepay.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Dashboard – SeePay</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#0B2E21; --gold:#FFC83D; --bg:#F8FAF9; --card:#fff; --line:#E5E7EB; --mut:#6B7280; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); font-family:Inter,system-ui,sans-serif; color:#111; }
+header { background:var(--ink); color:#fff; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; }
+header a { color:#fff; text-decoration:none; font-weight:600; }
+.wrap { max-width:900px; margin:2rem auto; padding:0 1.5rem; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.stat { background:var(--card); padding:1.25rem; border-radius:16px; border:1px solid var(--line); }
+.stat b { display:block; font-size:1.75rem; color:var(--ink); }
+.stat span { color:var(--mut); font-size:.85rem; }
+.card { background:var(--card); border-radius:16px; border:1px solid var(--line); padding:1.5rem; margin-bottom:1rem; }
+.card h2 { font-size:1.15rem; margin-bottom:.75rem; }
+.copy { display:flex; gap:.5rem; }
+.copy input { flex:1; padding:.6rem .8rem; border:1.5px solid var(--line); border-radius:10px; }
+.btn { background:var(--ink); color:#fff; border:none; padding:.55rem 1rem; border-radius:10px; font-weight:600; cursor:pointer; }
+.list div { display:flex; justify-content:space-between; padding:.75rem 0; border-bottom:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <strong>SeePay Agent</strong>
+  <a href="/login.html" onclick="localStorage.removeItem('seepay_session')">Sign out</a>
+</header>
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><b id="refs">0</b><span>Shops referred</span></div>
+    <div class="stat"><b id="active">0</b><span>Paid setup</span></div>
+    <div class="stat"><b id="earned">GH₵ 0</b><span>Total earned</span></div>
+    <div class="stat"><b id="bal">GH₵ 0</b><span>Balance</span></div>
+  </div>
+  <div class="card">
+    <h2>Your referral link</h2>
+    <div class="copy">
+      <input id="link" readonly>
+      <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('link').value);alert('Copied')">Copy</button>
+    </div>
+    <p style="color:var(--mut);font-size:.85rem;margin-top:.75rem">Share this link. You earn GH₵ 50 when a shop pays the setup fee.</p>
+  </div>
+  <div class="card">
+    <h2>Referred shops</h2>
+    <div class="list" id="shops"><div><span style="color:var(--mut)">No referrals yet.</span></div></div>
+  </div>
+</div>
 <script>
-SP.nav();
-var s=SP.require('agent'),E=SP.esc;
-function render(){
-  var a=SP.agent(s.id),e=SP.earnings(a),refs=SP.referrals(a.code),link=SP.base()+'register-shop.html?ref='+a.code;
-  document.getElementById('app').innerHTML=
-  '<div class="head"><div><h1>Hi, '+E(a.name.split(' ')[0])+'</h1><p class="mut">Referral code <b>'+E(a.code)+'</b></p></div></div>'+
-  '<div class="stats">'+
-    '<div class="card stat"><b>'+refs.length+'</b><span>Shops referred</span></div>'+
-    '<div class="card stat"><b>'+e.active+'</b><span>Paid setup (earning)</span></div>'+
-    '<div class="card stat"><b>'+SP.money(e.earned)+'</b><span>Total earned</span></div>'+
-    '<div class="card stat"><b>'+SP.money(e.balance)+'</b><span>Balance</span></div></div>'+
-  '<div class="card stack"><h2>Your referral link</h2><div class="copy"><input readonly value="'+E(link)+'" id="lnk"><button class="btn" id="cp">Copy</button></div>'+
-    '<p class="sm mut">Shops that register with this link are tied to you. You earn '+SP.money(SP.BONUS)+' when each one pays its setup fee.</p></div>'+
-  '<div class="card"><h2>Referred shops</h2><div class="list">'+(refs.length?refs.map(function(r){
-    return '<div><div class="grow"><b>'+E(r.name)+'</b><div class="sm mut">'+E(r.slug)+'.seepay.shop · '+E(r.category)+'</div></div>'+
-      (r.setupPaid?'<span class="badge">Active · +'+SP.money(SP.BONUS)+'</span>':'<span class="badge o">Waiting for setup payment</span>')+'</div>'}).join(''):
-    '<div><span class="mut">No referrals yet. Share your link to get started.</span></div>')+'</div></div>'+
-  '<div class="card stack"><h2>Payouts</h2><p class="mut sm">Paid to '+E(a.network)+' MoMo '+E(a.momo)+'. This demo only records the request.</p>'+
-    '<button class="btn g" id="po"'+(e.balance>0?'':' disabled')+'>Request payout of '+SP.money(e.balance)+'</button>'+
-    (a.payouts.length?'<div class="list">'+a.payouts.slice().reverse().map(function(p){return '<div><span>'+new Date(p.at).toLocaleDateString()+'</span><b>'+SP.money(p.amount)+'</b><span class="badge o">Requested</span></div>'}).join('')+'</div>':'')+'</div>';
-  document.getElementById('cp').onclick=function(){SP.copy(link)};
-  document.getElementById('po').onclick=function(){var x=SP.agent(s.id),b=SP.earnings(x).balance;if(b<=0)return;x.payouts.push({amount:b,at:Date.now()});SP.putAgent(x);SP.toast('Payout requested');render()};
-}
-if(s)render();
-</script></body></html>
+var session = JSON.parse(localStorage.getItem('seepay_session') || 'null');
+if (!session || session.role !== 'agent') location.href = '/login.html';
+var agents = JSON.parse(localStorage.getItem('seepay_agents') || '[]');
+var me = agents.find(a => a.code === session.id) || { code: session.id, name: session.name || 'Agent' };
+document.getElementById('link').value = location.origin + '/register?ref=' + me.code;
+document.getElementById('refs').textContent = '0';
+document.getElementById('earned').textContent = 'GH₵ 0';
+document.getElementById('bal').textContent = 'GH₵ 0';
+</script>
+</body>
+</html>
