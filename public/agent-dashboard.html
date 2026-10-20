@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Agent dashboard – SeePay</title></head><body>
+<main><div class="wrap stack" id="app"></div></main>
+<script src="seepay.js"></script>
+<script>
+SP.nav();
+var s=SP.require('agent'),E=SP.esc;
+function render(){
+  var a=SP.agent(s.id),e=SP.earnings(a),refs=SP.referrals(a.code),link=SP.base()+'register-shop.html?ref='+a.code;
+  document.getElementById('app').innerHTML=
+  '<div class="head"><div><h1>Hi, '+E(a.name.split(' ')[0])+'</h1><p class="mut">Referral code <b>'+E(a.code)+'</b></p></div></div>'+
+  '<div class="stats">'+
+    '<div class="card stat"><b>'+refs.length+'</b><span>Shops referred</span></div>'+
+    '<div class="card stat"><b>'+e.active+'</b><span>Paid setup (earning)</span></div>'+
+    '<div class="card stat"><b>'+SP.money(e.earned)+'</b><span>Total earned</span></div>'+
+    '<div class="card stat"><b>'+SP.money(e.balance)+'</b><span>Balance</span></div></div>'+
+  '<div class="card stack"><h2>Your referral link</h2><div class="copy"><input readonly value="'+E(link)+'" id="lnk"><button class="btn" id="cp">Copy</button></div>'+
+    '<p class="sm mut">Shops that register with this link are tied to you. You earn '+SP.money(SP.BONUS)+' when each one pays its setup fee.</p></div>'+
+  '<div class="card"><h2>Referred shops</h2><div class="list">'+(refs.length?refs.map(function(r){
+    return '<div><div class="grow"><b>'+E(r.name)+'</b><div class="sm mut">'+E(r.slug)+'.seepay.shop · '+E(r.category)+'</div></div>'+
+      (r.setupPaid?'<span class="badge">Active · +'+SP.money(SP.BONUS)+'</span>':'<span class="badge o">Waiting for setup payment</span>')+'</div>'}).join(''):
+    '<div><span class="mut">No referrals yet. Share your link to get started.</span></div>')+'</div></div>'+
+  '<div class="card stack"><h2>Payouts</h2><p class="mut sm">Paid to '+E(a.network)+' MoMo '+E(a.momo)+'. This demo only records the request.</p>'+
+    '<button class="btn g" id="po"'+(e.balance>0?'':' disabled')+'>Request payout of '+SP.money(e.balance)+'</button>'+
+    (a.payouts.length?'<div class="list">'+a.payouts.slice().reverse().map(function(p){return '<div><span>'+new Date(p.at).toLocaleDateString()+'</span><b>'+SP.money(p.amount)+'</b><span class="badge o">Requested</span></div>'}).join('')+'</div>':'')+'</div>';
+  document.getElementById('cp').onclick=function(){SP.copy(link)};
+  document.getElementById('po').onclick=function(){var x=SP.agent(s.id),b=SP.earnings(x).balance;if(b<=0)return;x.payouts.push({amount:b,at:Date.now()});SP.putAgent(x);SP.toast('Payout requested');render()};
+}
+if(s)render();
+</script></body></html>

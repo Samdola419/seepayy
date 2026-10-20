@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Sign in – SeePay</title></head><body>
+<main><div class="narrow stack">
+  <h1>Sign in</h1>
+  <p class="mut">Demo sign-in with no password. Real accounts arrive with Supabase Auth.</p>
+  <form class="card stack" id="fs"><h2>Shop owner</h2>
+    <div><label for="slug">Shop address</label><div class="suffix"><input id="slug" placeholder="mamajollof" autocomplete="off"><span>.seepay.shop</span></div></div>
+    <div class="err" id="e1" hidden></div><button class="btn">Open my dashboard</button>
+    <p class="sm mut">New here? <a href="register-shop.html">Register your shop</a></p></form>
+  <form class="card stack" id="fa"><h2>Agent</h2>
+    <div><label for="code">Referral code</label><input id="code" placeholder="KWAME123" autocomplete="off"></div>
+    <div class="err" id="e2" hidden></div><button class="btn">Open agent dashboard</button>
+    <p class="sm mut">New here? <a href="register-agent.html">Become an agent</a></p></form>
+  <div class="card stack"><h3>Want to look around first?</h3><p class="sm mut">Loads a sample shop (mamajollof) and agent (KWAME123) with products and orders.</p>
+    <button class="btn g" id="demo" type="button">Load demo data</button></div>
+</div></main>
+<script src="seepay.js"></script>
+<script>
+SP.nav();
+function show(id,m){var e=document.getElementById(id);e.textContent=m;e.hidden=!m}
+document.getElementById('fs').onsubmit=function(ev){ev.preventDefault();var s=SP.slugify(document.getElementById('slug').value);
+  if(!SP.shop(s))return show('e1','No shop found with that address.');SP.login('shop',s);location.href='shop-dashboard.html'};
+document.getElementById('fa').onsubmit=function(ev){ev.preventDefault();var c=document.getElementById('code').value.trim().toUpperCase();
+  if(!SP.agent(c))return show('e2','No agent found with that code.');SP.login('agent',c);location.href='agent-dashboard.html'};
+document.getElementById('demo').onclick=function(){SP.seedDemo();SP.toast('Demo loaded. Sign in as mamajollof or KWAME123.')};
+</script></body></html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/seepay.css">
+<title>Shop – SeePay</title>
+</head>
+<body>
+<main id="root" class="wrap" style="padding:2rem 0"></main>
+<script src="/seepay.js"></script>
+<script>
+SP.nav();
+var params = new URLSearchParams(location.search);
+var slug = params.get('shop') || location.pathname.split('/').pop();
+
+async function load() {
+  var root = document.getElementById('root');
+  root.innerHTML = '<p>Loading shop...</p>';
+  try {
+    var res = await fetch('/api/store/' + encodeURIComponent(slug));
+    if (!res.ok) throw new Error('Shop not found');
+    var data = await res.json();
+    var html = '<h1>' + SP.esc(data.vendor.business_name) + '</h1>';
+    html += '<p class="mut">WhatsApp: ' + SP.esc(data.vendor.whatsapp_number) + '</p>';
+    html += '<div class="list">';
+    if (data.products && data.products.length) {
+      data.products.forEach(function(p) {
+        html += '<div class="card"><b>' + SP.esc(p.name) + '</b><br><span class="mut">' + SP.esc(p.description||'') + '</span><br><b>' + SP.money(p.price) + '</b></div>';
+      });
+    } else {
+      html += '<p>No products yet.</p>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  } catch (e) {
+    root.innerHTML = '<h1>Shop not found</h1><p><a href="/">Go home</a></p>';
+  }
+}
+load();
+</script>
+</body>
+</html>

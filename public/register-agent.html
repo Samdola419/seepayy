@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Become an agent – SeePay</title></head><body>
+<main><div class="narrow stack">
+  <h1>Become a SeePay agent</h1>
+  <p class="mut">Share your referral link. When a shop you brought in pays its GH₵ 150 setup fee, GH₵ 50 is added to your balance.</p>
+  <form class="card stack" id="f" novalidate>
+    <div><label for="name">Full name</label><input id="name" placeholder="Kwame Mensah"></div>
+    <div class="f2"><div><label for="net">MoMo network</label><select id="net"></select></div>
+      <div><label for="momo">MoMo number (you get paid here)</label><input id="momo" inputmode="tel" placeholder="024 123 4567"></div></div>
+    <div class="err" id="err" hidden></div>
+    <button class="btn g">Get my referral code</button>
+    <p class="sm mut">Already an agent? <a href="login.html">Sign in</a></p>
+  </form>
+</div></main>
+<script src="seepay.js"></script>
+<script>
+SP.nav();
+var $=function(i){return document.getElementById(i)};
+SP.NETS.forEach(function(n){$('net').add(new Option(n))});
+$('f').onsubmit=function(e){e.preventDefault();
+  var r=SP.createAgent({name:$('name').value,network:$('net').value,momo:$('momo').value});
+  if(r.error){$('err').textContent=r.error;$('err').hidden=false;return}
+  SP.login('agent',r.agent.code);location.href='agent-dashboard.html'};
+</script></body></html>

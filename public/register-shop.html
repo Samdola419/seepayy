@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="seepay.css"><title>Register your shop – SeePay</title></head><body>
+<main><div class="narrow stack">
+  <h1>Open your shop</h1>
+  <p class="mut">One-time setup of GH₵ 150, then Paystack’s 1.95% and SeePay’s GH₵ 0.20 on each order. No monthly fee.</p>
+  <form class="card stack" id="f" novalidate>
+    <div><label for="name">Business name</label><input id="name" required placeholder="Mama Jollof"></div>
+    <div><label for="slug">Shop address</label><div class="suffix"><input id="slug" autocomplete="off" placeholder="mamajollof"><span>.seepay.shop</span></div></div>
+    <div><label for="cat">What do you sell?</label><select id="cat"></select></div>
+    <div><label for="desc">Short description</label><textarea id="desc" maxlength="200" placeholder="Tell customers what you offer"></textarea></div>
+    <div class="f2"><div><label for="net">MoMo network</label><select id="net"></select></div>
+      <div><label for="momo">MoMo number (you get paid here)</label><input id="momo" inputmode="tel" placeholder="024 123 4567"></div></div>
+    <div><label for="wa">WhatsApp number (optional)</label><input id="wa" inputmode="tel" placeholder="024 123 4567"></div>
+    <div><label for="ref">Referral code (optional)</label><input id="ref" placeholder="KWAME123"></div>
+    <div class="err" id="err" hidden></div>
+    <button class="btn g">Create my shop</button>
+    <p class="sm mut">Already registered? <a href="login.html">Sign in</a></p>
+  </form>
+</div></main>
+<script src="seepay.js"></script>
+<script>
+SP.nav();
+var $=function(i){return document.getElementById(i)},edited=false;
+SP.CATS.forEach(function(c){$('cat').add(new Option(c))});SP.NETS.forEach(function(n){$('net').add(new Option(n))});
+$('ref').value=(new URLSearchParams(location.search).get('ref')||'').toUpperCase();
+$('name').oninput=function(){if(!edited)$('slug').value=SP.slugify($('name').value)};
+$('slug').oninput=function(){edited=true;$('slug').value=SP.slugify($('slug').value)};
+$('f').onsubmit=function(e){e.preventDefault();
+  SP.createShop({name:$('name').value,slug:$('slug').value,category:$('cat').value,desc:$('desc').value,network:$('net').value,momo:$('momo').value,whatsapp:$('wa').value,ref:$('ref').value}).then(function(r){
+  if(r.error){$('err').textContent=r.error;$('err').hidden=false;return}
+  SP.login('shop',r.shop.slug);location.href='/shop-dashboard.html';});};
+</script></body></html>
